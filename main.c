@@ -96,7 +96,7 @@ int construct_sockaddr() {
         }
             
         memcpy(&addr[host_n], res->ai_addr, SOCKADDR_SIZE);
-        self_id ++;
+        host_n ++;
     }
 
     free(line_buffer);
