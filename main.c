@@ -81,6 +81,7 @@ int construct_sockaddr() {
     
     while (fgets(line_buffer, BUF_SIZE, (FILE *) fp)) {
         *(line_buffer + strlen(line_buffer) - 1) = '\0';
+        printf("%s\n", line_buffer);
 
         if (strcmp(line_buffer, self_hostname) == 0) {
             self_id = host_n;
@@ -146,6 +147,8 @@ int main(int argc, char* argv[]) {
     thread_head->next = NULL;
 
     bzero(&vc_entry[0], MAX_HOST);
+
+    gethostname(self_hostname, BUF_SIZE);
 
     // parse arguments
     for (int arg_itr = 1; arg_itr < argc; arg_itr ++) {
