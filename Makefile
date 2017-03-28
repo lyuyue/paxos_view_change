@@ -21,3 +21,4 @@ $(TARGET): $(SOURCE).c
 
 clean:
 	$(RM) $(TARGET)
+	$(RM) -rf $(TARGET).dSYM

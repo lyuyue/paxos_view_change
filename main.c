@@ -7,7 +7,9 @@
 #include <pthread.h>
 #include <signal.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "message.h"
 #include "constants.h"
@@ -16,17 +18,52 @@ int port = 0;
 char *port_str;
 char *hostfile;
 
+time_t progress_threshold = 10;
+time_t progress_timer = 0;
+time_t vc_proof_threshold = 2;
+time_t vc_proof_timer = 0;
+time_t cur_time = 0;
+
 int host_n = 0;
 int self_id = 0;
 char self_hostname[BUF_SIZE];
 
+char vc_entry[MAX_HOST];
+
+char recv_buf[BUF_SIZE];
+
 struct Message *head = NULL;
 
+socklen_t addrlen = SOCKADDR_SIZE;
 struct sockaddr_in addr[MAX_HOST];
+struct sockaddr_in self_sockaddr;
 struct addrinfo hints, *res, *addr_ptr; // for getaddrinfo() of other hosts
 
+int sockfd = -1;
 
-void *thread_send() {
+int last_attempted = -1;
+int last_installed = 0;
+
+struct thread_info {
+    pthread_t tid;
+    struct thread_info *next;
+} *thread_head;
+
+pthread_t * get_thread_id() {
+    struct thread_info *new_thread = (struct thread_info *) malloc(sizeof(struct thread_info));
+    new_thread->next = thread_head->next;
+    thread_head->next = new_thread;
+    return &new_thread->tid;
+}
+
+void * thread_send(char *data) {
+    for (int i = 0; i < host_n; i ++) {
+        if (i == self_id) continue;
+        if (send(sockfd, data, MESSAGE_LEN, 0) != MESSAGE_LEN) {
+            perror("ERROR send()");
+        }
+    }
+    free(data);
     return NULL;
 }
 
@@ -43,11 +80,11 @@ int construct_sockaddr() {
     }
     
     while (fgets(line_buffer, BUF_SIZE, (FILE *) fp)) {
-        host_n ++;
         *(line_buffer + strlen(line_buffer) - 1) = '\0';
 
         if (strcmp(line_buffer, self_hostname) == 0) {
             self_id = host_n;
+            host_n ++;
             continue;
         }
 
@@ -56,8 +93,9 @@ int construct_sockaddr() {
             perror("socket() error");
             return -1;
         }
-        
+            
         memcpy(&addr[host_n], res->ai_addr, SOCKADDR_SIZE);
+        self_id ++;
     }
 
     free(line_buffer);
@@ -68,16 +106,53 @@ int construct_sockaddr() {
     return 0;
 }
 
+int shift_to_leader_election(int view_id) {
+    // clear vc_entry set
+    bzero(&vc_entry[0], MAX_HOST);
+
+    last_attempted = view_id;
+
+    // construct View_Change message
+    struct View_Change *vc = (struct View_Change *) malloc(sizeof(struct View_Change));
+    vc->type = 2;
+    vc->server_id = self_id;
+    vc->attempted = last_attempted;
+
+    // TODO: send View_Change
+    pthread_t *new_thread_id = get_thread_id();
+    pthread_create(new_thread_id, NULL, (void *) thread_send, vc);
+    return 0;
+}
+
+int preinstall_ready() {
+    int votes = 0;
+    for (int i = 0; i < host_n; i++) {
+        votes += vc_entry[i];
+    }
+
+    if (votes > host_n / 2) {
+        return 1;
+    } 
+
+    return 0;
+}
+
 int main(int argc, char* argv[]) {
     // initialization
-    bzero(addr, SOCKADDR_SIZE * MAX_HOST);
+    bzero(&addr[0], SOCKADDR_SIZE * MAX_HOST);
+    bzero(&self_sockaddr, SOCKADDR_SIZE);
+
+    thread_head = (struct thread_info *) malloc(sizeof(struct thread_info));
+    thread_head->next = NULL;
+
+    bzero(&vc_entry[0], MAX_HOST);
 
     // parse arguments
     for (int arg_itr = 1; arg_itr < argc; arg_itr ++) {
         if (strcmp(argv[arg_itr], "-p") == 0) {
             arg_itr ++;
             port_str = (char *) argv[arg_itr];
-            port = atoi(argv[arg_itr]);
+            port = atoi(port_str);
             continue;
         }
 
@@ -93,5 +168,112 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    // bind sockfd to localhost
+    self_sockaddr.sin_family = AF_INET;
+    self_sockaddr.sin_port = htons(port);
+    self_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
+    // initialize a non-blocking socket and 
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0) {
+        perror("ERROR initialize socket");
+        return -1;
+    }
+
+    fcntl(sockfd, F_SETFL, O_NONBLOCK);
+
+    if (bind(sockfd, (struct sockaddr *) &self_sockaddr, SOCKADDR_SIZE) < 0) {
+        perror("ERROR bind socket");
+        return -1;
+    }
+
+    while (1) {
+        // Upon receiving message
+        for (int i = 0; i < host_n; i ++) {
+            if (self_id == i) continue;
+            bzero(recv_buf, BUF_SIZE);
+            // TODO: recvfrom()
+            if (recvfrom(sockfd, recv_buf, BUF_SIZE, 0, 
+                    (struct sockaddr *) &addr[i], &addrlen) < 0) {
+                continue;
+            }
+
+            uint32_t *type_ptr = (uint32_t *) recv_buf;
+            if (*type_ptr == VIEW_CHANGE) {
+                struct View_Change *vc = (struct View_Change *) recv_buf;
+                if (vc->attempted > last_attempted) {
+                    if (shift_to_leader_election(vc->attempted) < 0) {
+                        perror("ERROR shift_to_leader_election()");
+                        return -1;
+                    }
+
+                    vc_entry[self_id] = 1;
+                    vc_entry[vc->server_id] = 1;
+
+                } else if (vc->attempted == last_attempted) {
+                    vc_entry[vc->server_id] = 1;
+                    if (preinstall_ready() && last_attempted > last_installed) {
+                        bzero(&vc_entry[0], MAX_HOST);
+                        last_installed = vc->attempted;
+                        progress_threshold *= 2;
+                        time(&progress_timer);
+                    }
+                }
+            };
+
+            if (*type_ptr == VC_PROOF) {
+                struct VC_Proof *vc_proof = (struct VC_Proof *) recv_buf;
+                // reset last_installed and progress_timer
+                if (vc_proof->installed == last_installed 
+                        && vc_proof->server_id == last_installed % host_n) {
+                    time(&progress_timer);
+                }
+
+                if (vc_proof->installed > last_installed) {
+                    last_installed = vc_proof->installed;
+                    time(&progress_timer);
+                }
+            }
+        }
+
+        // if progress_timer expired, shift to leader election
+        time(&cur_time);
+        if (cur_time - progress_timer > progress_threshold) {
+            last_attempted = (last_attempted / host_n + 1) * host_n + self_id;
+            // shift to leader election
+            if (shift_to_leader_election(last_attempted) < 0) {
+                perror("ERROR shift_to_leader_election()");
+                return -1;
+            }
+        }
+
+        // periodically send VC_Proof
+        if (cur_time - vc_proof_timer < vc_proof_threshold) continue;
+
+        // reset vc_proof_timer
+        time(&vc_proof_timer);
+
+        // send VC_Proof
+        struct VC_Proof *vc_proof = (struct VC_Proof *) malloc(sizeof(struct VC_Proof));
+        vc_proof->type = 3;
+        vc_proof->server_id = self_id;
+        vc_proof->installed = last_installed;
+
+        pthread_t *new_thread_id = get_thread_id();
+        pthread_create(new_thread_id, NULL, (void *) thread_send, vc_proof);
+
+        // free terminated thread's info
+        struct thread_info *itr = thread_head;
+        while (itr->next != NULL) {
+            if (pthread_kill(itr->next->tid, 0) == 0) {
+                struct thread_info *tmp = itr->next;
+                itr->next = itr->next->next;
+                free(tmp);
+            }
+            if (itr->next == NULL) break;
+            itr = itr->next;
+        }
+    }
+
+    return 0;
 }
