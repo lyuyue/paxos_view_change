@@ -2,7 +2,7 @@
 CC = gcc
 
 # compiler flags
-CFLAGS = -g -Wall
+CFLAGS = -g -pthread -Wall
 
 # building target
 TARGET = server
