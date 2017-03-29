@@ -18,7 +18,7 @@ int port = 0;
 char *port_str;
 char *hostfile;
 
-time_t progress_threshold = 10;
+time_t progress_threshold = 20;
 time_t progress_timer = 0;
 time_t vc_proof_threshold = 2;
 time_t vc_proof_timer = 0;
@@ -271,6 +271,14 @@ int main(int argc, char* argv[]) {
                     (last_attempted > last_installed && last_attempted % host_n != self_id)) {
                 last_attempted = (last_attempted / host_n + 1) * host_n + self_id;
             }
+            // shift to leader election
+            if (shift_to_leader_election(last_attempted) < 0) {
+                perror("ERROR shift_to_leader_election()");
+                return -1;
+            }
+        }
+
+        if (last_attempted > last_installed) {
             // shift to leader election
             if (shift_to_leader_election(last_attempted) < 0) {
                 perror("ERROR shift_to_leader_election()");
