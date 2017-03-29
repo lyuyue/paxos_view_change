@@ -132,8 +132,15 @@ int shift_to_leader_election(int view_id) {
 
     // TODO: send View_Change
     printf("thread_send View_Change server_id: %d, attempted: %d\n", vc->server_id, vc->attempted);
-    pthread_t *new_thread_id = get_thread_id();
-    pthread_create(new_thread_id, NULL, (void *) thread_send, vc);
+    for (int i = 0; i < host_n; i ++) {
+        if (i == self_id || vc_entry[i] == 1) continue;
+        if (sendto(sockfd, (char *) vc, MESSAGE_LEN, 0, (struct sockaddr *) &addr[i], addrlen) < 0) {
+            perror("ERROR send()");
+        }
+    }
+    free(vc);
+    // pthread_t *new_thread_id = get_thread_id();
+    // pthread_create(new_thread_id, NULL, (void *) thread_send, vc);
     return 0;
 }
 
@@ -313,9 +320,16 @@ int main(int argc, char* argv[]) {
         vc_proof->server_id = self_id;
         vc_proof->installed = last_installed;
 
-        printf("thread_send VC_PROO view_id: %d\n", last_installed);
-        pthread_t *new_thread_id = get_thread_id();
-        pthread_create(new_thread_id, NULL, (void *) thread_send, vc_proof);
+        printf("thread_send VC_PROOF view_id: %d\n", last_installed);
+        for (int i = 0; i < host_n; i ++) {
+            if (i == self_id || vc_entry[i] == 1) continue;
+            if (sendto(sockfd, (char *) vc_proof, MESSAGE_LEN, 0, (struct sockaddr *) &addr[i], addrlen) < 0) {
+                perror("ERROR send()");
+            }
+        }
+        free(vc_proof);
+        // pthread_t *new_thread_id = get_thread_id();
+        // pthread_create(new_thread_id, NULL, (void *) thread_send, vc_proof);
 
         // free terminated thread's info
         struct thread_info *itr = thread_head;
