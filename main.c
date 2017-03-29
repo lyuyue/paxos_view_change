@@ -230,6 +230,7 @@ int main(int argc, char* argv[]) {
                 struct View_Change *vc = (struct View_Change *) recv_buf;
                 printf("receive View_Change server_id: %d, attempted: %d\n", vc->server_id, vc->attempted);
                 if (vc->attempted > last_attempted) {
+                    printf("here\n");
                     if (shift_to_leader_election(vc->attempted) < 0) {
                         perror("ERROR shift_to_leader_election()");
                         return -1;
