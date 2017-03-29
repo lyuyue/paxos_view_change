@@ -249,7 +249,7 @@ int main(int argc, char* argv[]) {
             // TODO: recvfrom()
             if (recvfrom(sockfd, recv_buf, BUF_SIZE, 0, 
                     (struct sockaddr *) NULL, NULL) < 0) {
-                perror("");
+                // perror("");
             }
 
             uint32_t *type_ptr = (uint32_t *) recv_buf;
