@@ -157,6 +157,16 @@ int preinstall_ready() {
     return 0;
 }
 
+void set_timeout() {
+    struct timeval tv;
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+        perror("Error setting timeout");
+    }
+    return;
+}
+
 int main(int argc, char* argv[]) {
     // initialization
     bzero(&addr[0], SOCKADDR_SIZE * MAX_HOST);
@@ -214,7 +224,8 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    fcntl(sockfd, F_SETFL, O_NONBLOCK);
+    set_timeout();
+    // fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
     if (bind(sockfd, (struct sockaddr *) &self_sockaddr, SOCKADDR_SIZE) < 0) {
         perror("ERROR bind socket");
