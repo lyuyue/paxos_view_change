@@ -95,7 +95,7 @@ int construct_sockaddr() {
             return -1;
         }
             
-        memcpy(&addr[host_n], &res->ai_addr, SOCKADDR_SIZE);
+        memcpy(&addr[host_n], res->ai_addr, SOCKADDR_SIZE);
         host_n ++;
     }
 
