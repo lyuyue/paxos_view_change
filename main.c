@@ -22,7 +22,7 @@ time_t progress_threshold = 20;
 time_t progress_timer = 0;
 time_t vc_proof_threshold = 2;
 time_t vc_proof_timer = 0;
-time_t vc_resend_timer = 0;
+time_t vc_resend_timer = 3;
 time_t cur_time = 0;
 
 int host_n = 0;
