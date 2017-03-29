@@ -281,6 +281,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (cur_time - vc_resend_timer > vc_proof_threshold && last_attempted > last_installed) {
+            time(&vc_resend_timer);
             // shift to leader election
             if (shift_to_leader_election(last_attempted) < 0) {
                 perror("ERROR shift_to_leader_election()");
