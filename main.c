@@ -120,7 +120,7 @@ int shift_to_leader_election(int view_id) {
     vc->attempted = last_attempted;
 
     // TODO: send View_Change
-    printf("thread_send View_Change server_id: %d, attempted: %d\n", vc->server_id, vc->last_attempted);
+    printf("thread_send View_Change server_id: %d, attempted: %d\n", vc->server_id, vc->attempted);
     pthread_t *new_thread_id = get_thread_id();
     pthread_create(new_thread_id, NULL, (void *) thread_send, vc);
     return 0;
