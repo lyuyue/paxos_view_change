@@ -22,6 +22,7 @@ time_t progress_threshold = 20;
 time_t progress_timer = 0;
 time_t vc_proof_threshold = 2;
 time_t vc_proof_timer = 0;
+time_t vc_resend_timer = 0;
 time_t cur_time = 0;
 
 int host_n = 0;
@@ -162,6 +163,7 @@ int main(int argc, char* argv[]) {
 
     time(&progress_timer);
     time(&vc_proof_timer);
+    time(&vc_resend_timer);
 
     // parse arguments
     for (int arg_itr = 1; arg_itr < argc; arg_itr ++) {
@@ -278,7 +280,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        if (last_attempted > last_installed) {
+        if (cur_time - vc_resend_timer > vc_proof_threshold && last_attempted > last_installed) {
             // shift to leader election
             if (shift_to_leader_election(last_attempted) < 0) {
                 perror("ERROR shift_to_leader_election()");
