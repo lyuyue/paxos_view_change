@@ -294,7 +294,6 @@ int main(int argc, char* argv[]) {
 
         // if progress_timer expired, shift to leader election
         time(&cur_time);
-        printf("cur_time: %ld, progress_timer: %ld\n", cur_time, progress_timer);
         if (cur_time - progress_timer > progress_threshold) {
             if (last_attempted <= last_installed || 
                     (last_attempted > last_installed && last_attempted % host_n != self_id)) {
