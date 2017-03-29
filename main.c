@@ -59,7 +59,7 @@ pthread_t * get_thread_id() {
 
 void * thread_send(char *data) {
     for (int i = 0; i < host_n; i ++) {
-        if (i == self_id) continue;
+        if (i == self_id || vc_entry[i] == 1) continue;
         if (sendto(sockfd, data, MESSAGE_LEN, 0, (struct sockaddr *) &addr[i], addrlen) < 0) {
             perror("ERROR send()");
         }
@@ -313,7 +313,7 @@ int main(int argc, char* argv[]) {
         vc_proof->server_id = self_id;
         vc_proof->installed = last_installed;
 
-        printf("thread_send VC_PROOF\n");
+        printf("thread_send VC_PROO view_id: %d\n", last_installed);
         pthread_t *new_thread_id = get_thread_id();
         pthread_create(new_thread_id, NULL, (void *) thread_send, vc_proof);
 
