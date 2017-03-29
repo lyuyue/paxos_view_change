@@ -22,7 +22,7 @@ time_t progress_threshold = 20;
 time_t progress_timer = 0;
 time_t vc_proof_threshold = 2;
 time_t vc_proof_timer = 0;
-time_t vc_resend_timer = 3;
+time_t vc_resend_timer = 0;
 time_t cur_time = 0;
 
 int host_n = 0;
@@ -306,14 +306,14 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        if (cur_time - vc_resend_timer > vc_proof_threshold && last_attempted > last_installed) {
-            time(&vc_resend_timer);
-            // shift to leader election
-            if (shift_to_leader_election(last_attempted) < 0) {
-                perror("ERROR shift_to_leader_election()");
-                return -1;
-            }
-        }
+        // if (cur_time - vc_resend_timer > vc_proof_threshold && last_attempted > last_installed) {
+        //     time(&vc_resend_timer);
+        //     // shift to leader election
+        //     if (shift_to_leader_election(last_attempted) < 0) {
+        //         perror("ERROR shift_to_leader_election()");
+        //         return -1;
+        //     }
+        // }
 
         // periodically send VC_Proof
         if (cur_time - vc_proof_timer < vc_proof_threshold) continue;
