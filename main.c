@@ -185,6 +185,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    printf("progress_threshold: %d\n", progress_threshold);
+
     if (construct_sockaddr() != 0) {
         perror("construct_sockaddr() failure");
         return 0;
