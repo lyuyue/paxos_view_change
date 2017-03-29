@@ -233,8 +233,8 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    set_timeout();
-    // fcntl(sockfd, F_SETFL, O_NONBLOCK);
+    // set_timeout();
+    fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
     if (bind(sockfd, (struct sockaddr *) &self_sockaddr, SOCKADDR_SIZE) < 0) {
         perror("ERROR bind socket");
@@ -243,12 +243,12 @@ int main(int argc, char* argv[]) {
 
     while (1) {
         // Upon receiving message
-        for (int i = 0; i < host_n; i ++) {
-            if (self_id == i) continue;
+        // for (int i = 0; i < host_n; i ++) {
+            // if (self_id == i) continue;
             bzero(recv_buf, BUF_SIZE);
             // TODO: recvfrom()
             if (recvfrom(sockfd, recv_buf, BUF_SIZE, 0, 
-                    (struct sockaddr *) &addr[i], &addrlen) < 0) {
+                    (struct sockaddr *) NULL, NULL) < 0) {
                 continue;
             }
 
@@ -294,7 +294,7 @@ int main(int argc, char* argv[]) {
                     jump_to_new_view(vc_proof->installed);
                 }
             }
-        }
+        // }
 
         // if progress_timer expired, shift to leader election
         time(&cur_time);
