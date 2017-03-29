@@ -42,8 +42,8 @@ struct addrinfo hints, *res, *addr_ptr; // for getaddrinfo() of other hosts
 
 int sockfd = -1;
 
-int last_attempted = -1;
-int last_installed = 0;
+uint32_t last_attempted = 0;
+uint32_t last_installed = 0;
 
 struct thread_info {
     pthread_t tid;
