@@ -258,7 +258,7 @@ int main(int argc, char* argv[]) {
                     vc_entry[self_id] = 1;
                     vc_entry[vc->server_id] = 1;
 
-                } else if (vc->attempted == last_attempted) {
+                } else if (vc->attempted == last_attempted && vc_entry[vc->server_id] == 0) {
                     vc_entry[vc->server_id] = 1;
                     if (preinstall_ready() && last_attempted > last_installed) {
                         printf("%d: Server %d is the new leader of view %d", 
