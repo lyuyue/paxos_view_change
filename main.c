@@ -108,7 +108,7 @@ int construct_sockaddr() {
 }
 
 int leader_of_installed() {
-    if (self_id == last_installed % host_n) {
+    if (self_id == last_  installed % host_n) {
         return 1;
     }
     return 0;
@@ -175,6 +175,12 @@ int main(int argc, char* argv[]) {
         if (strcmp(argv[arg_itr], "-h") == 0) {
             arg_itr ++;
             hostfile = argv[arg_itr];
+            continue;
+        }
+
+        if (strcmp(argv[arg_itr], "-t") == 0) {
+            arg_itr ++;
+            progress_threshold = atoi(argv[arg_itr]);
             continue;
         }
     }
@@ -257,7 +263,10 @@ int main(int argc, char* argv[]) {
         // if progress_timer expired, shift to leader election
         time(&cur_time);
         if (cur_time - progress_timer > progress_threshold) {
-            last_attempted = (last_attempted / host_n + 1) * host_n + self_id;
+            if (last_attempted < installed || 
+                    (last_attempted > installed && last_attempted % host_n != self_id)) {
+                last_attempted = (last_attempted / host_n + 1) * host_n + self_id;
+            }
             // shift to leader election
             if (shift_to_leader_election(last_attempted) < 0) {
                 perror("ERROR shift_to_leader_election()");
