@@ -236,6 +236,8 @@ int main(int argc, char* argv[]) {
                 } else if (vc->attempted == last_attempted) {
                     vc_entry[vc->server_id] = 1;
                     if (preinstall_ready() && last_attempted > last_installed) {
+                        printf("%d: Server %d is the new leader of view %d", 
+                            self_id, last_attempted % host_n, last_attempted);
                         bzero(&vc_entry[0], MAX_HOST);
                         last_installed = vc->attempted;
                         progress_threshold *= 2;
