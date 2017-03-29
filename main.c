@@ -247,6 +247,7 @@ int main(int argc, char* argv[]) {
             if (*type_ptr == VIEW_CHANGE) {
                 struct View_Change *vc = (struct View_Change *) recv_buf;
                 printf("receive View_Change server_id: %d, attempted: %d\n", vc->server_id, vc->attempted);
+                if (vc->attempted <= last_installed) continue;
                 printf("last_attempted %d\n", last_attempted);
                 if (vc->attempted > last_attempted) {
                     printf("here\n");
