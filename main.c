@@ -116,7 +116,7 @@ int leader_of_installed() {
 }
 
 int shift_to_leader_election(int view_id) {
-    printf("shift_to_leader_election %d, timer: %d\n", view_id, progress_timer);
+    printf("shift_to_leader_election %d\n", view_id);
     // clear vc_entry set
     if (last_attempted < view_id) bzero(&vc_entry[0], MAX_HOST);
 
@@ -130,15 +130,7 @@ int shift_to_leader_election(int view_id) {
 
     time(&progress_timer);
 
-    // TODO: send View_Change
-    // printf("thread_send View_Change server_id: %d, attempted: %d\n", vc->server_id, vc->attempted);
-    // for (int i = 0; i < host_n; i ++) {
-    //     if (i == self_id || vc_entry[i] == 1) continue;
-    //     if (sendto(sockfd, (char *) vc, MESSAGE_LEN, 0, (struct sockaddr *) &addr[i], addrlen) < 0) {
-    //         perror("ERROR send()");
-    //     }
-    // }
-    // free(vc);
+    // send View_Change
     pthread_t *new_thread_id = get_thread_id();
     pthread_create(new_thread_id, NULL, (void *) thread_send, vc);
     return 0;
@@ -214,7 +206,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    printf("progress_threshold: %d\n", progress_threshold);
+    printf("progress_threshold: %ld\n", progress_threshold);
 
     if (construct_sockaddr() != 0) {
         perror("construct_sockaddr() failure");
@@ -310,15 +302,6 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // if (cur_time - vc_resend_timer > vc_proof_threshold && last_attempted > last_installed) {
-        //     time(&vc_resend_timer);
-        //     // shift to leader election
-        //     if (shift_to_leader_election(last_attempted) < 0) {
-        //         perror("ERROR shift_to_leader_election()");
-        //         return -1;
-        //     }
-        // }
-
         // periodically send VC_Proof
         if (cur_time - vc_proof_timer < vc_proof_threshold) continue;
 
@@ -336,13 +319,7 @@ int main(int argc, char* argv[]) {
         vc_proof->installed = last_installed;
 
         printf("thread_send VC_PROOF view_id: %d\n", last_installed);
-        // for (int i = 0; i < host_n; i ++) {
-        //     if (i == self_id || vc_entry[i] == 1) continue;
-        //     if (sendto(sockfd, (char *) vc_proof, MESSAGE_LEN, 0, (struct sockaddr *) &addr[i], addrlen) < 0) {
-        //         perror("ERROR send()");
-        //     }
-        // }
-        // free(vc_proof);
+
         pthread_t *new_thread_id = get_thread_id();
         pthread_create(new_thread_id, NULL, (void *) thread_send, vc_proof);
 
