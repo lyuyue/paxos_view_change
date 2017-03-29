@@ -108,7 +108,7 @@ int construct_sockaddr() {
 }
 
 int leader_of_installed() {
-    if (self_id == installed % host_n) {
+    if (self_id == last_installed % host_n) {
         return 1;
     }
     return 0;
