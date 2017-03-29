@@ -117,7 +117,7 @@ int leader_of_installed() {
 
 int shift_to_leader_election(int view_id) {
     // clear vc_entry set
-    bzero(&vc_entry[0], MAX_HOST);
+    if (last_attemped != view_id) bzero(&vc_entry[0], MAX_HOST);
 
     last_attempted = view_id;
 
