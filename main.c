@@ -159,8 +159,8 @@ int preinstall_ready() {
 
 int jump_to_new_view(uint32_t view_id) {
     bzero(&vc_entry[0], MAX_HOST);
-    last_installed = vc->attempted;
-    printf("%d: Server %d is the new leader of view %d", 
+    last_installed = view_id;
+    printf("%d: Server %d is the new leader of view %d\n", 
         self_id, last_installed % host_n, last_installed);
     time(&progress_timer);
     return 0;
