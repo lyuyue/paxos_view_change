@@ -237,7 +237,7 @@ int main(int argc, char* argv[]) {
                         return -1;
                     }
 
-                    vmc_entry[self_id] = 1;
+                    vc_entry[self_id] = 1;
                     vc_entry[vc->server_id] = 1;
 
                 } else if (vc->attempted == last_attempted) {
