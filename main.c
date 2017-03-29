@@ -282,8 +282,7 @@ int main(int argc, char* argv[]) {
                 printf("VC_Proof server_id: %d, installed: %d\n", vc_proof->server_id, vc_proof->installed);
                 // reset last_installed and progress_timer
                 if (vc_proof->installed == last_installed) {
-                    if (leader_of_installed() || vc_proof->server_id == last_installed % host_n) {
-                    time(&progress_timer);
+                    if (leader_of_installed() || vc_proof->server_id == last_installed % host_n) time(&progress_timer);
                 }
 
                 if (vc_proof->installed > last_installed) {
