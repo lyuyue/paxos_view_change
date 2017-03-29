@@ -116,8 +116,9 @@ int leader_of_installed() {
 }
 
 int shift_to_leader_election(int view_id) {
+    printf("shift_to_leader_election %d\n", view_id);
     // clear vc_entry set
-    if (last_attempted != view_id) bzero(&vc_entry[0], MAX_HOST);
+    if (last_attempted > view_id) bzero(&vc_entry[0], MAX_HOST);
 
     last_attempted = view_id;
 
@@ -246,6 +247,11 @@ int main(int argc, char* argv[]) {
                         last_installed = vc->attempted;
                         progress_threshold *= 2;
                         time(&progress_timer);
+                    } else {
+                        if (shift_to_leader_election(vc->attempted) < 0) {
+                            perror("ERROR shift_to_leader_election()");
+                            return -1;
+                        }
                     }
                 }
             };
