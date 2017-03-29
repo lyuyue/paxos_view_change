@@ -59,7 +59,7 @@ pthread_t * get_thread_id() {
 void * thread_send(char *data) {
     for (int i = 0; i < host_n; i ++) {
         if (i == self_id) continue;
-        if (send(sockfd, data, MESSAGE_LEN, 0) != MESSAGE_LEN) {
+        if (sendto(sockfd, data, MESSAGE_LEN, 0, (struct sockaddr *) &addr[i], addrlen) < 0) {
             perror("ERROR send()");
         }
     }
@@ -95,7 +95,7 @@ int construct_sockaddr() {
             return -1;
         }
             
-        memcpy(&addr[host_n], res->ai_addr, SOCKADDR_SIZE);
+        memcpy(&addr[host_n], &res->ai_addr, SOCKADDR_SIZE);
         host_n ++;
     }
 
