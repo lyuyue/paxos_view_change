@@ -157,6 +157,15 @@ int preinstall_ready() {
     return 0;
 }
 
+int jump_to_new_view(uint32_t view_id) {
+    bzero(&vc_entry[0], MAX_HOST);
+    last_installed = vc->attempted;
+    printf("%d: Server %d is the new leader of view %d", 
+        self_id, last_installed % host_n, last_installed);
+    time(&progress_timer);
+    return 0;
+}
+
 void set_timeout() {
     struct timeval tv;
     tv.tv_sec = 1;
@@ -262,12 +271,8 @@ int main(int argc, char* argv[]) {
                 } else if (vc->attempted == last_attempted && vc_entry[vc->server_id] == 0) {
                     vc_entry[vc->server_id] = 1;
                     if (preinstall_ready() && last_attempted > last_installed) {
-                        printf("%d: Server %d is the new leader of view %d", 
-                            self_id, last_attempted % host_n, last_attempted);
-                        bzero(&vc_entry[0], MAX_HOST);
-                        last_installed = vc->attempted;
-                        progress_threshold *= 2;
-                        time(&progress_timer);
+                        jump_to_new_view(last_attempted);
+                        progress_timer *= 2;
                     } else {
                         if (shift_to_leader_election(vc->attempted) < 0) {
                             perror("ERROR shift_to_leader_election()");
@@ -286,8 +291,7 @@ int main(int argc, char* argv[]) {
                 }
 
                 if (vc_proof->installed > last_installed) {
-                    last_installed = vc_proof->installed;
-                    time(&progress_timer);
+                    jump_to_new_view(vc_proof->installed);
                 }
             }
         }
