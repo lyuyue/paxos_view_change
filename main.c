@@ -229,6 +229,7 @@ int main(int argc, char* argv[]) {
             if (*type_ptr == VIEW_CHANGE) {
                 struct View_Change *vc = (struct View_Change *) recv_buf;
                 printf("receive View_Change server_id: %d, attempted: %d\n", vc->server_id, vc->attempted);
+                printf("last_attempted %d\n", last_attempted);
                 if (vc->attempted > last_attempted) {
                     printf("here\n");
                     if (shift_to_leader_election(vc->attempted) < 0) {
@@ -236,7 +237,7 @@ int main(int argc, char* argv[]) {
                         return -1;
                     }
 
-                    vc_entry[self_id] = 1;
+                    vmc_entry[self_id] = 1;
                     vc_entry[vc->server_id] = 1;
 
                 } else if (vc->attempted == last_attempted) {
