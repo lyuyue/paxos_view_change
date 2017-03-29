@@ -151,6 +151,9 @@ int main(int argc, char* argv[]) {
 
     gethostname(self_hostname, BUF_SIZE);
 
+    time(&progress_timer);
+    time(&vc_proof_timer);
+
     // parse arguments
     for (int arg_itr = 1; arg_itr < argc; arg_itr ++) {
         if (strcmp(argv[arg_itr], "-p") == 0) {
@@ -205,6 +208,7 @@ int main(int argc, char* argv[]) {
             uint32_t *type_ptr = (uint32_t *) recv_buf;
             if (*type_ptr == VIEW_CHANGE) {
                 struct View_Change *vc = (struct View_Change *) recv_buf;
+                printf("receive View_Change server_id: %d, attempted: %d\n", vc->server_id, vc->attempted);
                 if (vc->attempted > last_attempted) {
                     if (shift_to_leader_election(vc->attempted) < 0) {
                         perror("ERROR shift_to_leader_election()");
@@ -227,7 +231,6 @@ int main(int argc, char* argv[]) {
 
             if (*type_ptr == VC_PROOF) {
                 struct VC_Proof *vc_proof = (struct VC_Proof *) recv_buf;
-
                 printf("VC_Proof server_id: %d, installed: %d\n", vc_proof->server_id, vc_proof->installed);
                 // reset last_installed and progress_timer
                 if (vc_proof->installed == last_installed 
