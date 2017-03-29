@@ -107,6 +107,13 @@ int construct_sockaddr() {
     return 0;
 }
 
+int leader_of_installed() {
+    if (self_id == installed % host_n) {
+        return 1;
+    }
+    return 0;
+}
+
 int shift_to_leader_election(int view_id) {
     // clear vc_entry set
     bzero(&vc_entry[0], MAX_HOST);
@@ -263,6 +270,10 @@ int main(int argc, char* argv[]) {
 
         // reset vc_proof_timer
         time(&vc_proof_timer);
+
+        if (leader_of_installed()) {
+            time(&progress_timer);
+        }
 
         // send VC_Proof
         struct VC_Proof *vc_proof = (struct VC_Proof *) malloc(sizeof(struct VC_Proof));
