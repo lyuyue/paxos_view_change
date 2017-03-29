@@ -233,8 +233,8 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    // set_timeout();
-    fcntl(sockfd, F_SETFL, O_NONBLOCK);
+    set_timeout();
+    // fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
     if (bind(sockfd, (struct sockaddr *) &self_sockaddr, SOCKADDR_SIZE) < 0) {
         perror("ERROR bind socket");
