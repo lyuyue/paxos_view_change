@@ -45,6 +45,11 @@ int sockfd = -1;
 uint32_t last_attempted = 0;
 uint32_t last_installed = 0;
 
+uint32_t max(uint32_t a, uint32_t b) {
+    if (a > b) return a;
+    return b;
+}
+
 struct thread_info {
     pthread_t tid;
     struct thread_info *next;
@@ -291,10 +296,11 @@ int main(int argc, char* argv[]) {
         // if progress_timer expired, shift to leader election
         time(&cur_time);
         if (cur_time - progress_timer > progress_threshold) {
-            if (last_attempted <= last_installed || 
-                    (last_attempted > last_installed && last_attempted % host_n != self_id)) {
-                last_attempted = (last_attempted / host_n + 1) * host_n + self_id;
-            }
+            // if (last_attempted <= last_installed || 
+            //         (last_attempted > last_installed && last_attempted % host_n != self_id)) {
+            //     last_attempted = last_installed + 1;
+            // }
+            last_attempted = max(last_attempted, last_installed) + 1;
             // shift to leader election
             if (shift_to_leader_election(last_attempted) < 0) {
                 perror("ERROR shift_to_leader_election()");
