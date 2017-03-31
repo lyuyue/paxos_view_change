@@ -18,6 +18,7 @@ int port = 0;
 char *port_str;
 char *hostfile;
 
+time_t init_threshold = 0;
 time_t progress_threshold = 20;
 time_t progress_timer = 0;
 time_t vc_proof_threshold = 2;
@@ -121,7 +122,7 @@ int leader_of_installed() {
 }
 
 int shift_to_leader_election(int view_id) {
-    printf("shift_to_leader_election %d\n", view_id);
+    printf("shift_to_leader_election %d, leader: %d\n", view_id, view_id % host_n);
     // clear vc_entry set
     if (last_attempted < view_id) bzero(&vc_entry[0], MAX_HOST);
 
@@ -206,7 +207,8 @@ int main(int argc, char* argv[]) {
 
         if (strcmp(argv[arg_itr], "-t") == 0) {
             arg_itr ++;
-            progress_threshold = atoi(argv[arg_itr]);
+            init_threshold = atoi(argv[arg_itr])
+            progress_threshold = init_threshold;
             continue;
         }
     }
@@ -256,7 +258,6 @@ int main(int argc, char* argv[]) {
                 if (vc->attempted <= last_installed) continue;
                 printf("last_attempted %d\n", last_attempted);
                 if (vc->attempted > last_attempted) {
-                    printf("here\n");
                     if (shift_to_leader_election(vc->attempted) < 0) {
                         perror("ERROR shift_to_leader_election()");
                         return -1;
@@ -269,7 +270,7 @@ int main(int argc, char* argv[]) {
                     vc_entry[vc->server_id] = 1;
                     if (preinstall_ready() && last_attempted > last_installed) {
                         jump_to_new_view(last_attempted);
-                        progress_timer *= 2;
+                        progress_threshold *= 2;
                     } else {
                         if (shift_to_leader_election(vc->attempted) < 0) {
                             perror("ERROR shift_to_leader_election()");
