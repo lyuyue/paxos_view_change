@@ -207,7 +207,7 @@ int main(int argc, char* argv[]) {
 
         if (strcmp(argv[arg_itr], "-t") == 0) {
             arg_itr ++;
-            init_threshold = atoi(argv[arg_itr])
+            init_threshold = atoi(argv[arg_itr]);
             progress_threshold = init_threshold;
             continue;
         }
