@@ -241,6 +241,9 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
+    printf("\n%d: Server %d is the new leader of view %d\n\n", 
+        self_id, last_installed % host_n, last_installed);
+
     while (1) {
         // Upon receiving message
         // for (int i = 0; i < host_n; i ++) {
