@@ -159,7 +159,7 @@ int jump_to_new_view(uint32_t view_id) {
     bzero(&vc_entry[0], MAX_HOST);
     last_installed = view_id;
     progress_threshold = init_threshold;
-    printf("%d: Server %d is the new leader of view %d\n", 
+    printf("\n%d: Server %d is the new leader of view %d\n\n", 
         self_id, last_installed % host_n, last_installed);
     time(&progress_timer);
     return 0;
