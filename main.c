@@ -18,12 +18,11 @@ int port = 0;
 char *port_str;
 char *hostfile;
 
-time_t init_threshold = 0;
-time_t progress_threshold = 20;
+time_t init_threshold = 5;
+time_t progress_threshold = 5;
 time_t progress_timer = 0;
 time_t vc_proof_threshold = 2;
 time_t vc_proof_timer = 0;
-time_t vc_resend_timer = 0;
 time_t cur_time = 0;
 
 int host_n = 0;
@@ -32,8 +31,8 @@ char self_hostname[BUF_SIZE];
 
 int state = 0;
 
-char vc_entry[MAX_HOST];
-char prepare_entry[MAX_HOST];
+char vc_entry[MAX_HOST];                // record for View_Change 
+char prepare_entry[MAX_HOST];           // record for Prepare_OK
 
 char recv_buf[BUF_SIZE];
 
@@ -274,6 +273,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    // set up initial state
     if (leader_of_installed()) {
         state = REG_LEADER;
     } else {
@@ -317,6 +317,7 @@ int main(int argc, char* argv[]) {
             printf("receive View_Change server_id: %d, attempted: %d\n", vc->server_id, vc->attempted);
             if (vc->attempted <= last_installed) continue;
             printf("last_attempted %d\n", last_attempted);
+
             if (vc->attempted > last_attempted) {
                 if (shift_to_leader_election(vc->attempted) < 0) {
                     perror("ERROR shift_to_leader_election()");

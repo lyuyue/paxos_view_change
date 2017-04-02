@@ -11,10 +11,10 @@ struct VC_Proof {
 };
 
 struct Prepare {
-    uint32_t type;
-    uint32_t server_id;
-    uint32_t preinstalled;
-    uint32_t local_aru;
+    uint32_t type;          // must equal to 4
+    uint32_t server_id;     // unique id of the sending server
+    uint32_t preinstalled;  // view number installed
+    uint32_t local_aru;     // seq number through which all updates executed
 };
 
 struct Proposal {
@@ -26,8 +26,8 @@ struct Proposal {
 };
 
 struct Prepare_OK {
-    uint32_t type;
-    uint32_t server_id;
-    uint32_t preinstalled;
+    uint32_t type;          // must equal to 5
+    uint32_t server_id;     // unique id of the sending server
+    uint32_t preinstalled;  // view number installed
     struct Proposal *data_list;
 };
