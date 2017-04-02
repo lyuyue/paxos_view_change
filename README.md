@@ -22,7 +22,7 @@ This implementation passes all cases listed above. :)
 ### Code Architecture
 **README.md**       
 **Makefile**        
-**constants.h**     : header file with constants definition   \
+**constants.h**     : header file with constants definition
 **message.h**       : header file with Message struct definition  
 **main.c**          : main program  
 
