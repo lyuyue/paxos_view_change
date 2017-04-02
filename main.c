@@ -373,7 +373,7 @@ int main(int argc, char* argv[]) {
             if (state == LEADER_ELECTION) {
                 // install the view first
                 last_installed = prepare->preinstalled;
-                state = REG_NON_LEADER;
+                shift_to_reg_non_leader();
             }
 
             struct Prepare_OK *prepare_ok = (struct Prepare_OK *) malloc(sizeof(struct Prepare_OK));
@@ -383,6 +383,7 @@ int main(int argc, char* argv[]) {
             prepare_ok->data_list = NULL;
 
             // TODO: send 
+            printf("send Prepare_OK message for view_id %d\n", last_installed);
             pthread_t *new_thread_id = get_thread_id();
             pthread_create(new_thread_id, NULL, (void *) thread_send, prepare_ok);
         }
@@ -392,6 +393,7 @@ int main(int argc, char* argv[]) {
             // ignore invalid Prepare_OK
             if (prepare_ok->preinstalled != last_installed) continue;
 
+            printf("Receive Prepare_OK from server %d\n", prepare_ok->server_id);
             prepare_entry[prepare_ok->server_id] = 1;
             if (prepared_ready()) {
                 shift_to_reg_leader();
