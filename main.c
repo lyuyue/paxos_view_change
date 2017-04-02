@@ -357,7 +357,7 @@ int main(int argc, char* argv[]) {
 
         if (*type_ptr == VC_PROOF) {
             struct VC_Proof *vc_proof = (struct VC_Proof *) recv_buf;
-            printf("VC_Proof server_id: %d, installed: %d\n", vc_proof->server_id, vc_proof->installed);
+            // printf("VC_Proof server_id: %d, installed: %d\n", vc_proof->server_id, vc_proof->installed);
             // reset last_installed and progress_timer
             if (vc_proof->installed == last_installed) {
                 if (leader_of_installed() || vc_proof->server_id == last_installed % host_n) time(&progress_timer);
@@ -427,7 +427,7 @@ int main(int argc, char* argv[]) {
         vc_proof->server_id = self_id;
         vc_proof->installed = last_installed;
 
-        printf("thread_send VC_PROOF view_id: %d\n", last_installed);
+        // printf("thread_send VC_PROOF view_id: %d\n", last_installed);
 
         pthread_t *new_thread_id = get_thread_id();
         pthread_create(new_thread_id, NULL, (void *) thread_send, vc_proof);
