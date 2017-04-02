@@ -244,12 +244,6 @@ int main(int argc, char* argv[]) {
     time(&vc_proof_timer);
     time(&vc_resend_timer);
 
-    if (leader_of_installed()) {
-        state = REG_LEADER;
-    } else {
-        state = REG_NON_LEADER;
-    }
-
     // parse arguments
     for (int arg_itr = 1; arg_itr < argc; arg_itr ++) {
         if (strcmp(argv[arg_itr], "-p") == 0) {
@@ -278,6 +272,12 @@ int main(int argc, char* argv[]) {
     if (construct_sockaddr() != 0) {
         perror("construct_sockaddr() failure");
         return 0;
+    }
+
+    if (leader_of_installed()) {
+        state = REG_LEADER;
+    } else {
+        state = REG_NON_LEADER;
     }
 
     // bind sockfd to localhost
