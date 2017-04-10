@@ -86,12 +86,12 @@ void * thread_send(char *data) {
     }
 
     for (int i = 0; i < host_n; i ++) {
-        if (i == self_id || vc_entry[i] == 1) continue;
+        if (i == self_id) continue;
         if (sendto(sockfd, data, message_len, 0, (struct sockaddr *) &addr[i], addrlen) < 0) {
             perror("ERROR send()");
         }
     }
-    
+
     free(data);
     return NULL;
 }
