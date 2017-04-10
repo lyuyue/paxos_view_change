@@ -241,7 +241,6 @@ int main(int argc, char* argv[]) {
 
     time(&progress_timer);
     time(&vc_proof_timer);
-    time(&vc_resend_timer);
 
     // parse arguments
     for (int arg_itr = 1; arg_itr < argc; arg_itr ++) {
