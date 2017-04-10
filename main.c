@@ -68,31 +68,30 @@ pthread_t * get_thread_id() {
 void * thread_send(char *data) {
     uint32_t *type_ptr = (uint32_t *) data;
     int message_len = 0;
-    for (int i = 0; i < 3; i ++) {
-        if (*type_ptr == PREPARE_OK) {
-            struct Prepare_OK *prepare_ok = (struct Prepare_OK *) data;
-            message_len = sizeof(struct Prepare_OK);
-            if (sendto(sockfd, data, message_len, 0, 
-                    (struct sockaddr *) &addr[prepare_ok->preinstalled % host_n], addrlen) < 0) {
-                perror("ERROR send()");
-            }
-            free(data);
-            return NULL;
+    if (*type_ptr == PREPARE_OK) {
+        struct Prepare_OK *prepare_ok = (struct Prepare_OK *) data;
+        message_len = sizeof(struct Prepare_OK);
+        if (sendto(sockfd, data, message_len, 0, 
+                (struct sockaddr *) &addr[prepare_ok->preinstalled % host_n], addrlen) < 0) {
+            perror("ERROR send()");
         }
+        free(data);
+        return NULL;
+    }
 
-        if (*type_ptr == PREPARE) {
-            message_len = sizeof(struct Prepare);
-        } else {
-            message_len = sizeof(struct View_Change);
-        }
+    if (*type_ptr == PREPARE) {
+        message_len = sizeof(struct Prepare);
+    } else {
+        message_len = sizeof(struct View_Change);
+    }
 
-        for (int i = 0; i < host_n; i ++) {
-            if (i == self_id || vc_entry[i] == 1) continue;
-            if (sendto(sockfd, data, message_len, 0, (struct sockaddr *) &addr[i], addrlen) < 0) {
-                perror("ERROR send()");
-            }
+    for (int i = 0; i < host_n; i ++) {
+        if (i == self_id || vc_entry[i] == 1) continue;
+        if (sendto(sockfd, data, message_len, 0, (struct sockaddr *) &addr[i], addrlen) < 0) {
+            perror("ERROR send()");
         }
     }
+    
     free(data);
     return NULL;
 }
